@@ -1,4 +1,4 @@
-#include <Eigen/Dense>
+#include <eigen3/Eigen/Dense>
 #include <iostream>
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -11,49 +11,56 @@ using namespace Eigen;
 const std::string IMAGE_NAME = "Albert_Einstein_Head.jpg";
 
 
-int main(int argc, char* argv[]) {
-    const char* input_image_path = IMAGE_NAME.c_str();
+void save_img(MatrixXi m, int width, int height, std::string outputName){
+    Matrix<unsigned char, Dynamic, Dynamic, RowMajor> img(height, width);
+            img = m.unaryExpr([](int val) -> unsigned char {
+                return static_cast<unsigned char>(val);
+            });
 
-    // Load the image using stb_image
-    int width, height, channels;
-    unsigned char* image_data = stbi_load(input_image_path, &width, &height, &channels, 1);  // Force load with 1 channel
+            // Save the grayscale image using stb_image_write
+            if (stbi_write_png(outputName.c_str(), width, height, 1,
+                               img.data(), width) == 0) {
+                std::cerr << "Error: Could not save " + outputName + " image" << std::endl;
 
-    if (!image_data) {
-        std::cerr << "Error: Could not load image " << input_image_path << std::endl;
-        return 1;
-    }
+                return ;
+            }
 
-    std::cout << "Image loaded: " << width << "x" << height << " with " << channels << " channels." << std::endl;
+            std::cout << "image saved to " << outputName << std::endl;
 
-    // Prepare Eigen matrices for each RGB channel
-    MatrixXd img(height, width);
-
-    // Fill the matrices with image data
-    for (int i = 0; i < height; ++i) {
-        for (int j = 0; j < width; ++j) {
-            int index = (i * width + j) * 3;  // 3 channels (RGB)
-            img(i, j) = static_cast<double>(image_data[index]) / 255.0;
-        }
-    }
-    // Free memory!!!
-    stbi_image_free(image_data);
-
-    Matrix<unsigned char, Dynamic, Dynamic, RowMajor> grayscale_image(height, width);
-    // Use Eigen's unaryExpr to map the grayscale values (0.0 to 1.0) to 0 to 255
-    grayscale_image = img.unaryExpr([](double val) -> unsigned char {
-        return static_cast<unsigned char>(val * 255.0);
-    });
-
-    // Save the grayscale image using stb_image_write
-    const std::string output_image_path = "output_grayscale.png";
-    if (stbi_write_png(output_image_path.c_str(), width, height, 1,
-                        grayscale_image.data(), width) == 0) {
-        std::cerr << "Error: Could not save grayscale image" << std::endl;
-
-        return 1;
-    }
-
-    std::cout << "Grayscale image saved to " << output_image_path << std::endl;
-
-    return 0;
 }
+
+int main(int argc, char* argv[]) {
+            srand(777); //repetible randoms
+
+            // Load the image using stb_image
+            int width, height, channels;
+            unsigned char* image_data = stbi_load(IMAGE_NAME.c_str(), &width, &height, &channels, 1);  // Force 1 channel
+
+            if (!image_data) {
+                std::cerr << "Error: Could not load image " << IMAGE_NAME << std::endl;
+                return 1;
+            }
+
+            std::cout << "Image loaded: " << width << "x" << height << " with " << channels << " channels." << std::endl;
+
+            MatrixXi gray(height, width);
+
+            // Fill the matrix with image data    
+            for (int i = 0; i < height; ++i) {
+                for (int j = 0; j < width; ++j) {
+                    gray(i, j) = static_cast<int>(image_data[(i * width + j)]);
+                }
+            }
+            // Free memory!!!
+            stbi_image_free(image_data);
+
+            save_img(gray, width, height, "initial.png");
+            
+            MatrixXi noisy = gray.unaryExpr([](int val) -> int {
+                return std::min(255, std::max(0, val + rand()%101 - 50));
+            });
+
+            save_img(noisy, width, height, "noisy.png");
+
+    return 0;           
+        }
