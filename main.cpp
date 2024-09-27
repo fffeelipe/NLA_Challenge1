@@ -65,12 +65,11 @@ int main(int argc, char* argv[]) {
             auto gray_vector = gray.reshaped();
             auto noisy_vector = noisy.reshaped();
 
-std::cout<<(gray_vector.dot(gray_vector))<<std::endl;
-        double gray_vector_norm = std::sqrt(gray_vector.dot(gray_vector));
-        double noisy_vector_norm = std::sqrt(noisy_vector.dot(noisy_vector));
+            double gray_vector_norm = std::sqrt(gray_vector.dot(gray_vector));
+            double noisy_vector_norm = std::sqrt(noisy_vector.dot(noisy_vector));
 
-        std::cout<<"norm of original vector is: "<<gray_vector_norm<<"\n";
-        std::cout<<"norm of noisy vector is: "<<noisy_vector_norm<<"\n";
+            std::cout<<"norm of original vector is: "<<gray_vector_norm<<"\n";
+            std::cout<<"norm of noisy vector is: "<<noisy_vector_norm<<"\n";
 
 
 
