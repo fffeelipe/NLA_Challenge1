@@ -1,5 +1,6 @@
 #include <Eigen/Sparse>
 #include <iostream>
+#include <eigen3/unsupported/Eigen/SparseExtra>
 
 #define STB_IMAGE_IMPLEMENTATION
 
@@ -125,8 +126,19 @@ int main(int argc, char *argv[]) {
 
     // task 7
     save_img(sharpened_original, width, height, "sharpened_original.png");
+
+    //task 8 tbf
+    if (saveMarket(A2, "A2.mxt")) {
+        printf("A2.mtx succesfully saved");
+    } else {
+        printf("Error: A2 couldn't be saved");
+    }
+
+    if (saveMarketVector(noisy_vector, "A2.mxt")) {
+        printf("A2.mtx succesfully saved");
+    } else {
+        printf("Error: A2 couldn't be saved");
+    }
+
     return 0;
-
-    //task 8
-
 }
