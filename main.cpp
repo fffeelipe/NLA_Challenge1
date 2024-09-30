@@ -17,7 +17,9 @@ const double EPS = 0.00001;
 
 void save_img(MatrixXd m, int width, int height, std::string outputName) {
     Matrix<unsigned char, Dynamic, Dynamic, RowMajor> img(height, width);
-    img = m.unaryExpr([](double val) -> unsigned char { return static_cast<unsigned char>(val); });
+    img = m.unaryExpr([](double val) -> unsigned char {
+        return static_cast<unsigned char>(std::min(255.0, std::max(0.0, val)));
+    });
 
     // Save the image using stb_image_write
     if (stbi_write_png(outputName.c_str(), width, height, 1,
@@ -36,14 +38,14 @@ applyConvolution(VectorXd img, MatrixXd convolutionMatrix, int width, int height
     SparseMatrix<double> filterMatrix(img.size(), img.size());
     std::vector<Triplet<double> > filter_data;
     for (int idx = 0; idx < img.size(); idx++) {
-        int x = idx / width;
-        int y = idx % width;
+        int row = idx / width;
+        int column = idx % width;
 
         for (int i = -1; i < 2; i++) {
             for (int j = -1; j < 2; j++) {
-                if (y + i < 0 || y + i >= width || x + j < 0 || x + j >= height) continue;
+                if (column + i < 0 || column + i >= width || row + j < 0 || row + j >= height) continue;
 
-                filter_data.emplace_back(idx, (y + i) + (j + x) * width, convolutionMatrix(i + 1, j + 1));
+                filter_data.emplace_back(idx, column + i + (j + row) * width, convolutionMatrix(i + 1, j + 1));
             }
 
         }
@@ -134,10 +136,10 @@ int main(int argc, char *argv[]) {
         printf("Error: A2 couldn't be saved");
     }
 
-    if (saveMarketVector(noisy_vector, "A2.mxt")) {
-        printf("A2.mtx succesfully saved");
+    if (saveMarketVector(noisy_vector, "v.mxt")) {
+        printf("v.mtx succesfully saved");
     } else {
-        printf("Error: A2 couldn't be saved");
+        printf("Error: A couldn't be saved");
     }
 
     return 0;
