@@ -73,6 +73,10 @@ int main(int argc, char *argv[]) {
                    {-1, 9,  -3},
                    {0,  -1, 0}};
 
+    MatrixXd H_lap{{0, -1, 0},
+                   {-1, 4, -1},
+                   {0, -1, 0}};
+
     // Load the image using stb_image
     int width, height, channels;
     unsigned char *image_data = stbi_load(IMAGE_NAME.c_str(), &width, &height, &channels, 1); // Force 1 channel
@@ -129,7 +133,7 @@ int main(int argc, char *argv[]) {
     
     // task 6
     auto [A2, sharpened_original] = applyConvolution(gray_vector, H_sh2, width, height);
-    printf("\nnumber of non-zero entries in Matrix A2: %i, is symetrical? %s\n", A2.nonZeros(),
+    printf("\nnumber of non-zero entries in Matrix A2: %i, is symmetrical? %s\n", A2.nonZeros(),
            A2.isApprox(A2.transpose()) ? "true" : "false");
 
     // task 7
@@ -193,7 +197,104 @@ int main(int argc, char *argv[]) {
 
 
     // task9 
+    if (saveMarket(x, "x.mtx")) {
+        printf("\nx.mtx succesfully saved. \n");
+    } else {
+        printf("Error: x couldn't be saved. \n");
+    }
+
+    Eigen::MatrixXd solutionX = Eigen::Map<Eigen::MatrixXd>(x.data(), height, width).transpose();
+    std::cout << "The size of this solutionX is: " << solutionX.rows() << " x " << solutionX.cols() << std::endl;
+    save_img(solutionX, width, height, "solutionX_image.png");
+
+
+    // Task 10
+    auto [A3, laplation_edge] = applyConvolution(x, H_lap, width, height);
+    printf("\nIs Matrix A3 symmetrical? %s\n", 
+           A3.isApprox(A3.transpose()) ? "true" : "false");
+
+    // Task 11
+    save_img(laplation_edge, width, height, "laplationEdge.png");
     
+
+    // Task 12
+    if (saveMarket(A3, "A3.mtx")) {
+        printf("\nA3.mtx succesfully saved. \n");
+    } else {
+        printf("Error: A3 couldn't be saved. \n");
+    }
+
+    // Load matrix
+    spMatrix matrixA3;
+    Eigen::loadMarket(matrixA3, "A3.mtx");
+
+    // Create an identity matrix of the same size as matrixA3
+    spMatrix I(matrixA3.rows(), matrixA3.cols());
+    I.setIdentity();  // Sets I as the identity matrix
+
+    // Add the identity matrix to matrixA3
+    spMatrix newMatrixA3 = I + matrixA3;
+    std::cout << "\nSize of matrix the I+A3 is " << newMatrixA3.rows() << " X " << newMatrixA3.cols() << std::endl;
+    std::cout << "Non-zero entries in the I+A3 is: " << newMatrixA3.nonZeros() << std::endl;
+
+    // Check if newMatrixA3 is symmetric(It is!! So use CG)
+    if (newMatrixA3.isApprox(newMatrixA3.transpose())) {
+        std::cout << "newMatrixA3 is symmetric." << std::endl;
+    } else {
+        std::cout << "newMatrixA3 is not symmetric." << std::endl;
+    }
+
+    //Set vector y(Same size as w, initially empty)
+    spVector y(w.size());
+
+    // Set parameters for solver
+    double tol2 = 1.e-10;  // Tolerance for the solver
+    int maxIteration2 = 1000;  // Max iterations
+
+    // Set up Conjugate Gradient solver from Eigen-->CG solver for symmetric and postive-define matrix A
+    Eigen::ConjugateGradient<spMatrix, Eigen::Lower|Eigen::Upper> solverCG;
+
+    // Set solver parameters
+    solverCG.setMaxIterations(maxIteration2);
+    solverCG.setTolerance(tol2);
+
+    // Compute the decomposition of matrix A3 (prepares the matrix for solving)
+    solverCG.compute(newMatrixA3);  //Factor the matrix A2
+    y = solverCG.solve(w); // Solve the system () * x = w
+
+    std::cout << "\nSolver CG results: " << std::endl;
+    std::cout << "Iteration number is: " << solverCG.iterations() << std::endl;
+    std::cout << "Final relative residual(error) is: " << solverCG.error() << std::endl;
+
+
+    // Task 13
+    if (saveMarket(y, "y.mtx")) {
+        printf("\ny.mtx succesfully saved. \n");
+    } else {
+        printf("Error: y couldn't be saved. \n");
+    }
+
+    Eigen::MatrixXd solutionY = Eigen::Map<Eigen::MatrixXd>(y.data(), height, width).transpose();
+    std::cout << "The size of this solutionY is: " << solutionY.rows() << " x " << solutionY.cols() << std::endl;
+    save_img(solutionY, width, height, "solutionY_image.png");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
+
 
     return 0;
 }
