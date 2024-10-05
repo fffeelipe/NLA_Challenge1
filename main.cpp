@@ -31,10 +31,8 @@ void save_img(MatrixXd m, int width, int height, std::string outputName) {
     });
 
     // Save the image using stb_image_write
-    if (stbi_write_png(outputName.c_str(), width, height, 1,
-                       img.data(), width) == 0) {
+    if (stbi_write_png(outputName.c_str(), width, height, 1, img.data(), width) == 0) {
         std::cerr << "\nError: Could not save " + outputName + " image" << std::endl;
-
         return;
     }
 
@@ -56,11 +54,8 @@ applyConvolution(VectorXd img, MatrixXd convolutionMatrix, int width, int height
 
                 filter_data.emplace_back(idx, column + i + (j + row) * width, convolutionMatrix(i + 1, j + 1));
             }
-
         }
-
     }
-
     filterMatrix.setFromTriplets(filter_data.begin(), filter_data.end());
 
     return {filterMatrix, filterMatrix * img};
@@ -141,7 +136,7 @@ int main(int argc, char *argv[]) {
     save_img(sharpened_original, width, height, "sharpened_original.png");
 
 
-    std::cout << "\n!!!Task8 start-----\n" << std::endl;
+    // std::cout << "\n!!!Task8 start-----\n" << std::endl;
     //task 8 tbf
     if (saveMarket(A2, "A2.mtx")) {
         printf("\nA2.mtx succesfully saved. \n");
@@ -149,15 +144,10 @@ int main(int argc, char *argv[]) {
         printf("Error: A2 couldn't be saved. \n");
     }
 
-<<<<<<< HEAD
-    
     if (saveMarketVector(noisy_vector, "noisy_image.mtx")) {
         printf("nosiy_image.mtx succesfully saved. \n");
     } else {
         printf("Error: nosiy_image couldn't be saved. \n");
-=======
-    
->>>>>>> 717c0769cca804ccdeda6ee76aa7c9ccfac71ec9
     }
 
     // Load matrix
@@ -166,9 +156,8 @@ int main(int argc, char *argv[]) {
     
     std::cout << "\nSize of matrix A2 is " << matrixA2.rows() << " X " << matrixA2.cols() << std::endl;
     std::cout << "Non-zero entries in A2 is: " << matrixA2.nonZeros() << std::endl;
-    spMatrix checkMatrix = spMatrix(matrixA2.transpose()) - matrixA2;  // check the symmetry
-    std::cout << "Norm of skew-symmetric part: " << checkMatrix.norm() << std::endl;  
-
+    // spMatrix checkMatrix = spMatrix(matrixA2.transpose()) - matrixA2;  // check the symmetry
+    // std::cout << "Norm of skew-symmetric part: " << checkMatrix.norm() << std::endl;  
 
     // Load vector w from the noisy_image.mtx
     spVector w;
@@ -201,6 +190,10 @@ int main(int argc, char *argv[]) {
     std::cout << "\nSolver results: " << std::endl;
     std::cout << "Iteration number is: " << solver.iterations() << std::endl;
     std::cout << "Final relative residual(error) is: " << solver.error() << std::endl;
+
+
+    // task9 
+    
 
     return 0;
 }
