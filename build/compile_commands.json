@@ -1,0 +1,8 @@
+[
+{
+  "directory": "/home/jellyfish/shared-folder/NLA_Challenge1/build",
+  "command": "/u/sw/toolchains/gcc-glibc/11.2.0/prefix/bin/g++ -g -o CMakeFiles/Challenge1.dir/main.cpp.o -c /home/jellyfish/shared-folder/NLA_Challenge1/main.cpp",
+  "file": "/home/jellyfish/shared-folder/NLA_Challenge1/main.cpp",
+  "output": "CMakeFiles/Challenge1.dir/main.cpp.o"
+}
+]
