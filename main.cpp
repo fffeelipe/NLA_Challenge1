@@ -1,6 +1,10 @@
+// #include <eigen3/Eigen/Sparse>
 #include <Eigen/Sparse>
+
 #include <iostream>
-#include <eigen3/unsupported/Eigen/SparseExtra>
+// #include <eigen3/unsupported/Eigen/SparseExtra>  
+#include <unsupported/Eigen/SparseExtra>  
+
 
 #define STB_IMAGE_IMPLEMENTATION
 
@@ -15,6 +19,11 @@ using namespace Eigen;
 const std::string IMAGE_NAME = "Albert_Einstein_Head.jpg";
 const double EPS = 0.00001;
 
+// Some useful alias
+using spMatrix = Eigen::SparseMatrix<double, RowMajor>;
+using spVector = Eigen::VectorXd;
+
+
 void save_img(MatrixXd m, int width, int height, std::string outputName) {
     Matrix<unsigned char, Dynamic, Dynamic, RowMajor> img(height, width);
     img = m.unaryExpr([](double val) -> unsigned char { return static_cast<unsigned char>(val); });
@@ -22,12 +31,12 @@ void save_img(MatrixXd m, int width, int height, std::string outputName) {
     // Save the image using stb_image_write
     if (stbi_write_png(outputName.c_str(), width, height, 1,
                        img.data(), width) == 0) {
-        std::cerr << "Error: Could not save " + outputName + " image" << std::endl;
+        std::cerr << "\nError: Could not save " + outputName + " image" << std::endl;
 
         return;
     }
 
-    std::cout << "image saved to " << outputName << std::endl;
+    std::cout << "\nimage saved to " << outputName << std::endl;
 }
 
 // assume convolution matrix to be 3x3
@@ -53,8 +62,8 @@ applyConvolution(VectorXd img, MatrixXd convolutionMatrix, int width, int height
     filterMatrix.setFromTriplets(filter_data.begin(), filter_data.end());
 
     return {filterMatrix, filterMatrix * img};
-
 }
+
 
 int main(int argc, char *argv[]) {
     srand(777); // repetible randoms
@@ -77,6 +86,8 @@ int main(int argc, char *argv[]) {
     }
 
     // task 1
+    // std::cout << "***The name of the input image is: " << IMAGE_NAME << std::endl;
+
     std::cout << "Image loaded: " << width << "x" << height << " with " << channels << " channels." << std::endl;
 
     MatrixXd gray(height, width);
@@ -97,8 +108,8 @@ int main(int argc, char *argv[]) {
     // task 2
     save_img(noisy, width, height, "noisy.png");
 
-    auto gray_vector = gray.transpose().reshaped();
-    auto noisy_vector = noisy.transpose().reshaped();
+    auto gray_vector = gray.transpose().reshaped();    // v
+    auto noisy_vector = noisy.transpose().reshaped();  // w
 
     std::cout << (gray_vector.dot(gray_vector)) << std::endl;
     double gray_vector_norm = std::sqrt(gray_vector.dot(gray_vector));
@@ -106,39 +117,84 @@ int main(int argc, char *argv[]) {
 
 
     // task 3
-    std::cout << "size of original vector is: " << gray_vector.size() << "\n";
+    std::cout << "\nsize of original vector is: " << gray_vector.size() << "\n";
     std::cout << "size of noisy vector is: " << noisy_vector.size() << "\n";
 
-    std::cout << "norm of original vector is: " << gray_vector_norm << "\n";
+    std::cout << "\nnorm of original vector is: " << gray_vector_norm << "\n";
     std::cout << "norm of noisy vector is: " << noisy_vector_norm << "\n";
 
     // task 4
     auto [A1, smooth_noisy_vector] = applyConvolution(noisy_vector, H_av2, width, height);
-    printf("number of non-zero entries in matrix A1: %i\n", A1.nonZeros());
+    printf("\nnumber of non-zero entries in matrix A1: %i\n", A1.nonZeros());
+
     // task 5
     save_img(smooth_noisy_vector, width, height, "smooth_noisy_vector.png");
-
-
+    
     // task 6
     auto [A2, sharpened_original] = applyConvolution(gray_vector, H_sh2, width, height);
-    printf("number of non-zero entries in Matrix A2: %i, is symetrical? %s\n", A2.nonZeros(),
+    printf("\nnumber of non-zero entries in Matrix A2: %i, is symetrical? %s\n", A2.nonZeros(),
            A2.isApprox(A2.transpose()) ? "true" : "false");
 
     // task 7
     save_img(sharpened_original, width, height, "sharpened_original.png");
 
+
+    std::cout << "\n!!!Task8 start-----\n" << std::endl;
     //task 8 tbf
-    if (saveMarket(A2, "A2.mxt")) {
-        printf("A2.mtx succesfully saved");
+    if (saveMarket(A2, "A2.mtx")) {
+        printf("\nA2.mtx succesfully saved. \n");
     } else {
-        printf("Error: A2 couldn't be saved");
+        printf("Error: A2 couldn't be saved. \n");
     }
 
-    if (saveMarketVector(noisy_vector, "A2.mxt")) {
-        printf("A2.mtx succesfully saved");
+    
+    if (saveMarketVector(noisy_vector, "noisy_image.mtx")) {
+        printf("nosiy_image.mtx succesfully saved. \n");
     } else {
-        printf("Error: A2 couldn't be saved");
+        printf("Error: nosiy_image couldn't be saved. \n");
     }
+
+    // Load matrix
+    spMatrix matrixA2;
+    Eigen::loadMarket(matrixA2, "A2.mtx");
+    
+    std::cout << "\nSize of matrix A2 is " << matrixA2.rows() << " X " << matrixA2.cols() << std::endl;
+    std::cout << "Non-zero entries in A2 is: " << matrixA2.nonZeros() << std::endl;
+    spMatrix checkMatrix = spMatrix(matrixA2.transpose()) - matrixA2;  // check the symmetry
+    std::cout << "Norm of skew-symmetric part: " << checkMatrix.norm() << std::endl;  
+
+
+    // Load vector w from the noisy_image.mtx
+    spVector w;
+    Eigen::loadMarketVector(w, "noisy_image.mtx");
+    std::cout << "The size of vector w is " << w.size() << std::endl;
+
+    //Set vector x(Same size as w, initially empty)
+    spVector x(w.size());
+
+    // Set parameters for solver
+    double tol = 1.e-9;  // Tolerance for the solver
+    int maxIteration = 1000;  // Max iterations
+
+    // Set up Conjugate Gradient solver from Eigen-->CG solver for symmetric and postive-define matrix A
+    // Eigen::ConjugateGradient<SpMatrix, Eigen::Lower|Eigen::Upper> solver;
+
+    // Solver1: Set up the BiCGSTAB solver with preconditioner
+    // BiCGSTAB --> A general-purpose solver for non-symmetric matrix
+    // Eigen::BiCGSTAB<spMatrix, Eigen::DiagonalPreconditioner<double>> solver; //diagonal(Jacobi) preconditioner
+    Eigen::BiCGSTAB<spMatrix, Eigen::IncompleteLUT<double>> solver;  // Incomplete LU Factorization(ILU) preconditioner
+    
+    // Set solver parameters
+    solver.setMaxIterations(maxIteration);
+    solver.setTolerance(tol);
+
+    // Compute the decomposition of matrix A2 (prepares the matrix for solving)
+    solver.compute(matrixA2);  //Factor the matrix A2
+    x = solver.solve(w); // Solve the system A2 * x = w
+
+    std::cout << "\nSolver results: " << std::endl;
+    std::cout << "Iteration number is: " << solver.iterations() << std::endl;
+    std::cout << "Final relative residual(error) is: " << solver.error() << std::endl;
 
     return 0;
 }
