@@ -15,8 +15,9 @@ const std::string IMAGE_NAME = "Albert_Einstein_Head.jpg";
 const double EPS = 0.00001;
 
 // Some useful alias
-using spMatrix = Eigen::SparseMatrix<double, RowMajor>;
-using spVector = Eigen::VectorXd;
+using spMatrix = Eigen::SparseMatrix<double, RowMajor>;  //This sparse matrix type is stored row by row
+using spVector = Eigen::VectorXd;  // Dynamically sized vector of type double
+
 
 void save_img(MatrixXd m, int width, int height, std::string outputName)
 {
@@ -30,7 +31,6 @@ void save_img(MatrixXd m, int width, int height, std::string outputName)
         std::cerr << "\nError: Could not save " + outputName + " image" << std::endl;
         return;
     }
-
     std::cout << "\nimage saved to " << outputName << std::endl;
 }
 
@@ -62,6 +62,8 @@ applyConvolution(VectorXd img, MatrixXd convolutionMatrix, int width, int height
     return {filterMatrix, filterMatrix * img};
 }
 
+
+// Use solver to solve linear system
 void solveLinearSystem(const spMatrix &A, const spVector &w, spVector &result, const std::string &resultFileName,
                        double tolerance, int maxIterations, const std::string &imageFileName, int width, int height, bool isSymmetric = true)
 {
@@ -99,8 +101,8 @@ void solveLinearSystem(const spMatrix &A, const spVector &w, spVector &result, c
         else
         {
             std::cout << "\nSolver CG results: " << std::endl;
-            std::cout << "Iteration number: " << solverCG.iterations() << std::endl;
-            std::cout << "Final relative residual (error): " << solverCG.error() << std::endl;
+            std::cout << "Iteration number is: " << solverCG.iterations() << std::endl;
+            std::cout << "Final relative residual (error) is: " << solverCG.error() << std::endl;
         }
     }
     else
@@ -119,8 +121,8 @@ void solveLinearSystem(const spMatrix &A, const spVector &w, spVector &result, c
         else
         {
             std::cout << "\nSolver BiCGSTAB results: " << std::endl;
-            std::cout << "Iteration number: " << solver.iterations() << std::endl;
-            std::cout << "Final relative residual (error): " << solver.error() << std::endl;
+            std::cout << "Iteration number is: " << solver.iterations() << std::endl;
+            std::cout << "Final relative residual (error) is: " << solver.error() << std::endl;
         }
     }
 
@@ -136,8 +138,8 @@ void solveLinearSystem(const spMatrix &A, const spVector &w, spVector &result, c
 
     // Convert result to a matrix for image saving
     Eigen::MatrixXd solution = Eigen::Map<Eigen::MatrixXd>(result.data(), height, width).transpose();
+
     save_img(solution, width, height, imageFileName);
-    std::cout << "Image saved to " << imageFileName << std::endl;
 }
 
 int main(int argc, char *argv[])
@@ -210,7 +212,7 @@ int main(int argc, char *argv[])
     // task 4
 
     auto [A1, smooth_noisy_vector] = applyConvolution(noisy_vector, H_av2, width, height);
-    printf("\nnumber of non-zero entries in matrix A1: %i\n", A1.nonZeros());
+    printf("\nnumber of non-zero entries in matrix A1 is: %i\n", A1.nonZeros());
 
     // task 5
 
@@ -219,7 +221,7 @@ int main(int argc, char *argv[])
     // task 6
 
     auto [A2, sharpened_original] = applyConvolution(gray_vector, H_sh2, width, height);
-    printf("\nnumber of non-zero entries in Matrix A2: %i, is symmetrical? %s\n", A2.nonZeros(),
+    printf("\nnumber of non-zero entries in Matrix A2 is: %i. Is symmetrical? %s\n", A2.nonZeros(),
            A2.isApprox(A2.transpose()) ? "true" : "false");
 
     // task 7
@@ -261,6 +263,8 @@ int main(int argc, char *argv[])
     // Set vector x(Same size as w, initially empty)
     spVector x(w.size());
 
+    // Task 8, solve A2x = w
+
     solveLinearSystem(matrixA2, w, x, "x.mtx", 1.e-9, 1000, "solutionX_image.png", width, height, false);
 
     // Task 10
@@ -271,7 +275,7 @@ int main(int argc, char *argv[])
     // Task 11
     save_img(laplation_edge, width, height, "laplationEdge.png");
 
-    // Task 12
+    // Task 12 && Task 13
     if (saveMarket(A3, "A3.mtx"))
     {
         printf("\nA3.mtx succesfully saved. \n");
@@ -297,7 +301,7 @@ int main(int argc, char *argv[])
     // Check if newMatrixA3 is symmetric(It is!! So use CG)
     if (newMatrixA3.isApprox(newMatrixA3.transpose()))
     {
-        std::cout << "newMatrixA3 is symmetric." << std::endl;
+        std::cout << "newMatrixA3 is symmetricial." << std::endl;
 
         spVector y(w.size());
 
@@ -305,7 +309,7 @@ int main(int argc, char *argv[])
     }
     else
     {
-        std::cout << "newMatrixA3 is not symmetric." << std::endl;
+        std::cout << "newMatrixA3 is not symmetricial." << std::endl;
     }
 
     return 0;
