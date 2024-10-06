@@ -4,14 +4,15 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
-                "/usr/include/eigen3",
-                "/usr/include"
+                "/usr/include/eigen3",  // Eigen include path
+                "/usr/include",  // Default system includes
+                "/root/shared-docker/lis-2.0.34/include"  // Absolute path to LIS include directory
             ],
             "defines": [],
-            "compilerPath": "/usr/bin/clang",
+            "compilerPath": "/usr/bin/g++",  // Use g++ if compiling with g++
             "cStandard": "c17",
             "cppStandard": "c++17",
-            "intelliSenseMode": "linux-clang-x64"
+            "intelliSenseMode": "linux-gcc-x64"  // Set to gcc if you're using g++
         }
     ],
     "version": 4
