@@ -264,25 +264,13 @@ int main(int argc, char *argv[])
 
     // Task 12
     printf("task 12\n");
-    if (saveMarket(A3, "output/A3.mtx"))
-    {
-        printf("\nA3.mtx succesfully saved. \n");
-    }
-    else
-    {
-        printf("Error: A3 couldn't be saved. \n");
-    }
-
-    // Load matrix
-    spMatrix matrixA3;
-    Eigen::loadMarket(matrixA3, "output/A3.mtx");
 
     // Create an identity matrix of the same size as matrixA3
-    spMatrix I(matrixA3.rows(), matrixA3.cols());
+    SparseMatrix<double>I(A3.rows(), A3.cols());
     I.setIdentity(); // Sets I as the identity matrix
 
     // Add the identity matrix to matrixA3
-    spMatrix newMatrixA3 = I + matrixA3;
+    spMatrix newMatrixA3 = I + A3;
     std::cout << "\nSize of matrix the I+A3 is " << newMatrixA3.rows() << " X " << newMatrixA3.cols() << std::endl;
     std::cout << "Non-zero entries in the I+A3 is: " << newMatrixA3.nonZeros() << std::endl;
 
