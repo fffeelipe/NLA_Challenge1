@@ -15,3 +15,9 @@
 13. Convert the image stored in the vector y into a .png image and upload it.
 14. Comment the obtained results.
 
+comments:
+We needed to truncate the pixel results to avoid overflow of the allowed values (0-255)
+as expected, using a symmetrical kernel created a symmetrical matrix.
+trying to get the original image from the convoluted image returned something "close", which is expected.
+as expected, the jacobi pre-conditioner performed VERY slower than the BiCG, with 100 and 26 iterations respectively.
+for symmetrical matrices the Conjugate Gradient performs very good.

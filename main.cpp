@@ -229,7 +229,7 @@ int main(int argc, char *argv[])
     spVector x(noisy_vector.size());
     int temp;
     char line[100];
-    FILE *file = fopen("output/nla_x.mtx", "r");
+    FILE *file = fopen("output/x.mtx", "r");
     fgets(line, 100, file);
     fgets(line, 100, file);
 
@@ -306,15 +306,6 @@ int main(int argc, char *argv[])
 
     // Task 13
     printf("task 13\n");
-    if (saveMarket(y, "output/y.mtx"))
-    {
-        printf("\ny.mtx succesfully saved. \n");
-    }
-    else
-    {
-        printf("Error: y couldn't be saved. \n");
-    }
-
     Eigen::MatrixXd solutionY = Eigen::Map<Eigen::MatrixXd>(y.data(), height, width).transpose();
     std::cout << "The size of this solutionY is: " << solutionY.rows() << " x " << solutionY.cols() << std::endl;
     save_img(solutionY, width, height, "output/solutionY_image.png");
