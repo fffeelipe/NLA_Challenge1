@@ -16,8 +16,12 @@
 14. Comment the obtained results.
 
 comments:
-We needed to truncate the pixel results to avoid overflow of the allowed values (0-255)
-as expected, using a symmetrical kernel created a symmetrical matrix.
-trying to get the original image from the convoluted image returned something "close", which is expected.
-as expected, the jacobi pre-conditioner performed VERY slower than the BiCG, with 100 and 26 iterations respectively.
-for symmetrical matrices the Conjugate Gradient performs very good.
+Truncating Pixel Values: Pixel values were clamped to the valid range [0, 255] to avoid overflow, ensuring a proper display of the resulting images.
+
+Symmetry in Convolution Matrices: The smoothing and edge detection kernels were symmetrical, leading to symmetric matrices (A2 and A3). Symmetry is useful for employing efficient solvers like the Conjugate Gradient (CG) method.
+
+Solver Performance: Using the ILU preconditioner in BiCG was much faster than Jacobi, with 16 vs. 100 iterations. For the symmetric system with the Laplacian kernel, CG was very efficient and performed well.
+
+Effectiveness of Filters: The smoothing filter reduced noise, and the sharpening filter enhanced details, working as expected. Both filters produced results that were close to the original image.
+
+Solver Results: The CG solver reached a high precision with a final residual of 10^-10 , confirming it successfully minimized error while preserving key features of the image.
