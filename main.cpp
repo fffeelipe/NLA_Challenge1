@@ -145,7 +145,11 @@ int main(int argc, char *argv[])
     save_img(sharpened_original, width, height, "output/sharpened_original.png");
 
     // task 8 tbf
+    // First preconditioner --> jacobi
     // mery@mery-IdeaPad-3-15ADA05:~/shared-docker/lis-2.0.34/test$ ./test1 A2.mtx w.mtx nla_x.mtx histnla.txt -i bicg -p jacobi -tol 1e-9
+
+    // Another preconditioner is more efficient --> ilu
+    // root@36d8968386ff test # mpirun -n 1 ./test1 /shared-folder/NLA_Challenge1/output/A2.mtx /shared-folder/NLA_Challenge1/output/w.mtx /shared-folder/NLA_Challenge1/output/x.mtx hist.txt -i bicg -p ilu -tol 1e-9 
 
     //  auto gray_vector = gray.transpose().reshaped();    // v
     // auto noisy_vector = noisy.transpose().reshaped();  // w
@@ -170,7 +174,8 @@ int main(int argc, char *argv[])
     }
     fclose(out);
 
-    /*number of processes = 1
+    /* jacobi preconditioner
+    number of processes = 1
     matrix size = 87296 x 87296 (782086 nonzero entries)
 
     initial vector x      : all components set to 0
@@ -189,6 +194,29 @@ int main(int argc, char *argv[])
     BiCG:     matrix creation  = 2.145767e-06 sec.
     BiCG:   linear solver      = 3.943875e-01 sec.
     BiCG: relative residual    = 8.774665e-10*/
+
+
+    /* ilu preconditioner
+    number of processes = 1
+    matrix size = 87296 x 87296 (782086 nonzero entries)
+
+    initial vector x      : all components set to 0
+    precision             : double
+    linear solver         : BiCG
+    preconditioner        : ILU(0)
+    convergence condition : ||b-Ax||_2 <= 1.0e-09 * ||b-Ax_0||_2
+    matrix storage format : CSR
+    linear solver status  : normal end
+
+    BiCG: number of iterations = 16
+    BiCG:   double             = 16
+    BiCG:   quad               = 0
+    BiCG: elapsed time         = 5.555391e-02 sec.
+    BiCG:   preconditioner     = 3.671193e-02 sec.
+    BiCG:     matrix creation  = 9.536743e-07 sec.
+    BiCG:   linear solver      = 1.884198e-02 sec.
+    BiCG: relative residual    = 4.028669e-10
+    */
 
     // task9
     spVector x(noisy_vector.size());
