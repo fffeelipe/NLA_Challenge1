@@ -9,7 +9,7 @@
 7. Apply the previous sharpening filter to the original image by performing the matrix vector multiplication A2v. Export and upload the resulting image.
 8. Export the Eigen matrix A2 and vector w in the .mtx format. Using a suitable iterative solver and preconditioner technique available in the LIS library compute the approximate solution to the linear system A2x = w prescribing a tolerance of 10−9. Report here the iteration count and the final residual.
 9. Import the previous approximate solution vector x in Eigen and then convert it into a .png image. Upload the resulting file here.
-10.  Write the convolution operation corresponding to the detection kernel Hlap as a matrix vector multiplication by a matrix A3 having size mn × mn. Is matrix A3 symmetric?
+10. Write the convolution operation corresponding to the detection kernel Hlap as a matrix vector multiplication by a matrix A3 having size mn × mn. Is matrix A3 symmetric?
 11. Apply the previous edge detection filter to the original image by performing the matrix vector multiplication A3 v. Export and upload the resulting image.
 12. Using a suitable iterative solver available in the Eigen library compute the approximate solution of the linear system (I+A3)y = w, where I denotes the identity matrix, prescribing a tolerance of 10−10. Report here the iteration count and the final residual.
 13. Convert the image stored in the vector y into a .png image and upload it.

@@ -16,7 +16,6 @@
 using namespace Eigen;
 
 const std::string IMAGE_NAME = "Albert_Einstein_Head.jpg";
-const double EPS = 0.00001;
 
 // Some useful alias
 using spMatrix = Eigen::SparseMatrix<double, RowMajor>;
@@ -43,7 +42,7 @@ std::tuple<SparseMatrix<double>, VectorXd>
 applyConvolution(VectorXd img, MatrixXd convolutionMatrix, int width, int height)
 {
     SparseMatrix<double> filterMatrix(img.size(), img.size());
-    std::vector<Triplet<double>> filter_data;
+    std::list<Triplet<double>> filter_data;
     for (int idx = 0; idx < img.size(); idx++)
     {
         int row = idx / width;
@@ -53,7 +52,7 @@ applyConvolution(VectorXd img, MatrixXd convolutionMatrix, int width, int height
         {
             for (int j = -1; j < 2; j++)
             {
-                if (column + i < 0 || column + i >= width || row + j < 0 || row + j >= height)
+                if (column + i < 0 || column + i >= width || row + j < 0 || row + j >= height || convolutionMatrix(i + 1, j + 1) == 0.)
                     continue;
 
                 filter_data.emplace_back(idx, column + i + (j + row) * width, convolutionMatrix(i + 1, j + 1));
@@ -84,7 +83,6 @@ int main(int argc, char *argv[])
     // Load the image using stb_image
     int width, height, channels;
     unsigned char *image_data = stbi_load(IMAGE_NAME.c_str(), &width, &height, &channels, 1); // Force 1 channel
-
     if (!image_data)
     {
         std::cerr << "Error: Could not load image " << IMAGE_NAME << std::endl;
@@ -92,6 +90,7 @@ int main(int argc, char *argv[])
     }
 
     // task 1
+    printf("task 1\n");
     // std::cout << "***The name of the input image is: " << IMAGE_NAME << std::endl;
 
     std::cout << "Image loaded: " << width << " x " << height << " with " << channels << " channels." << std::endl;
@@ -113,16 +112,17 @@ int main(int argc, char *argv[])
                                     { return std::min(255.0, std::max(0.0, static_cast<double>(val + rand() % 101 - 50))); });
 
     // task 2
+    printf("task 2\n");
     save_img(noisy, width, height, "output/noisy.png");
 
     auto gray_vector = gray.transpose().reshaped();   // v
     auto noisy_vector = noisy.transpose().reshaped(); // w
 
-    std::cout << (gray_vector.dot(gray_vector)) << std::endl;
     double gray_vector_norm = std::sqrt(gray_vector.dot(gray_vector));
     double noisy_vector_norm = std::sqrt(noisy_vector.dot(noisy_vector));
 
     // task 3
+    printf("task 3\n");
     std::cout << "\nsize of original vector is: " << gray_vector.size() << "\n";
     std::cout << "size of noisy vector is: " << noisy_vector.size() << "\n";
 
@@ -130,25 +130,28 @@ int main(int argc, char *argv[])
     std::cout << "norm of noisy vector is: " << noisy_vector_norm << "\n";
 
     // task 4
+    printf("task 4\n");
     auto [A1, smooth_noisy_vector] = applyConvolution(noisy_vector, H_av2, width, height);
     printf("\nnumber of non-zero entries in matrix A1: %i\n", A1.nonZeros());
 
     // task 5
+    printf("task 5\n");
     save_img(smooth_noisy_vector, width, height, "output/smooth_noisy_vector.png");
 
     // task 6
+    printf("task 6\n");
     auto [A2, sharpened_original] = applyConvolution(gray_vector, H_sh2, width, height);
     printf("\nnumber of non-zero entries in Matrix A2: %i, is symmetrical? %s\n", A2.nonZeros(),
            A2.isApprox(A2.transpose()) ? "true" : "false");
 
     // task 7
+    printf("task 7\n");
     save_img(sharpened_original, width, height, "output/sharpened_original.png");
 
     // task 8 tbf
-    // mery@mery-IdeaPad-3-15ADA05:~/shared-docker/lis-2.0.34/test$ ./test1 A2.mtx w.mtx nla_x.mtx histnla.txt -i bicg -p jacobi -tol 1e-9
+    printf("task 8\n");
+    // mery@mery-IdeaPad-3-15ADA05:~/shared-docker/lis-2.0.34/test$ ./test1 A2.mtx w.mtx nla_x.mtx histnla.txt -i bicg -p jacobi -tol 10e-9
 
-    //  auto gray_vector = gray.transpose().reshaped();    // v
-    // auto noisy_vector = noisy.transpose().reshaped();  // w
     if (saveMarket(A2, "output/A2.mtx"))
     {
         printf("\nA2.mtx succesfully saved. \n");
@@ -191,10 +194,11 @@ int main(int argc, char *argv[])
     BiCG: relative residual    = 8.774665e-10*/
 
     // task9
+    printf("task 9\n");
     spVector x(noisy_vector.size());
     int temp;
     char line[100];
-    FILE *file = fopen("output/x.mtx", "r");
+    FILE *file = fopen("output/nla_x.mtx", "r");
     fgets(line, 100, file);
     fgets(line, 100, file);
 
@@ -215,17 +219,20 @@ int main(int argc, char *argv[])
 
     Eigen::MatrixXd solutionX = Eigen::Map<Eigen::MatrixXd>(x.data(), height, width).transpose();
     std::cout << "The size of this solutionX is: " << solutionX.rows() << " x " << solutionX.cols() << std::endl;
-    save_img(solutionX, width, height, "output/solutionX_image.png");
+    save_img(solutionX, width, height,"output/solutionX_image.png");
 
     // Task 10
+    printf("task 10\n");
     auto [A3, laplation_edge] = applyConvolution(gray_vector, H_lap, width, height);
     printf("\nIs Matrix A3 symmetrical? %s\n",
            A3.isApprox(A3.transpose()) ? "true" : "false");
 
     // Task 11
+    printf("task 11\n");
     save_img(laplation_edge, width, height, "output/laplationEdge.png");
 
     // Task 12
+    printf("task 12\n");
     if (saveMarket(A3, "output/A3.mtx"))
     {
         printf("\nA3.mtx succesfully saved. \n");
@@ -279,6 +286,7 @@ int main(int argc, char *argv[])
     std::cout << "Final relative residual(error) is: " << solverCG.error() << std::endl;
 
     // Task 13
+    printf("task 13\n");
     if (saveMarket(y, "output/y.mtx"))
     {
         printf("\ny.mtx succesfully saved. \n");
