@@ -109,6 +109,16 @@ int n, m, channels;
     // TASK 3: Export matrix A^T A in Matrix Market format
     // Save A^T A in the Matrix Market format (.mtx) to be used with external solvers such as LIS.
 
+    if (saveMarket(At_A, "output/At_A.mtx"))
+    {
+        printf("At_A.mtx succesfully saved.\n");
+    }
+    else
+    {
+        printf("Error: At_A couldn't be saved.\n");
+        return 1;
+    }
+
     // TASK 4: Find a shift μ to accelerate the eigenvalue solver
     // Identify an optimal shift μ that can improve the convergence of the iterative eigensolver.
     // Report μ and the number of iterations required for convergence.
