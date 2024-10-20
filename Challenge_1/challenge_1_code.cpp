@@ -15,7 +15,7 @@
 
 using namespace Eigen;
 
-const std::string IMAGE_NAME = "Albert_Einstein_Head.jpg";
+const std::string IMAGE_PATH = "Albert_Einstein_Head.jpg";
 
 // Some useful alias
 using spMatrix = Eigen::SparseMatrix<double, RowMajor>;
@@ -82,10 +82,10 @@ int main(int argc, char *argv[])
 
     // Load the image using stb_image
     int width, height, channels;
-    unsigned char *image_data = stbi_load(IMAGE_NAME.c_str(), &width, &height, &channels, 1); // Force 1 channel
+    unsigned char *image_data = stbi_load(IMAGE_PATH.c_str(), &width, &height, &channels, 1); // Force 1 channel
     if (!image_data)
     {
-        std::cerr << "Error: Could not load image " << IMAGE_NAME << std::endl;
+        std::cerr << "Error: Could not load image " << IMAGE_PATH << std::endl;
         return 1;
     }
 

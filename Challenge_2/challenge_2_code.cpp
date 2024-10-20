@@ -4,7 +4,9 @@
 #include <unsupported/Eigen/SparseExtra>
 #include <iostream>
 #include <fstream>
+#define STB_IMAGE_IMPLEMENTATION
 #include "Library/stb_image.h"
+#define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "Library/stb_image_write.h"
 
 using namespace Eigen;
@@ -13,6 +15,8 @@ using namespace std;
 // Some useful alias
 using spMatrix = Eigen::SparseMatrix<double, RowMajor>;
 using spVector = Eigen::VectorXd;
+
+const std::string IMAGE_PATH = "Input/Albert_Einstein_Head.jpg";
 
 void save_img(MatrixXd m, int width, int height, std::string outputName)
 {
@@ -64,8 +68,43 @@ int main(int argc, char *argv[])
     // Then compute the matrix product A^T * A to analyze the correlation between image columns.
     // Finally, compute and print the Euclidean norm of A^T * A.
 
+int n, m, channels;
+    unsigned char *image_data = stbi_load(IMAGE_PATH.c_str(), &n, &m, &channels, 1); // Force 1 channel
+    //m = height, n = width
+
+    if (!image_data)
+    {
+        std::cerr << "Error: Could not load image " << IMAGE_PATH << std::endl;
+        return 1;
+    }
+    MatrixXd A(m, n);
+
+    for (int i = 0; i < m; ++i)
+    {
+        for (int j = 0; j < n; ++j)
+        {
+            A(i, j) = static_cast<double>(image_data[(i * n + j)]);
+        }
+    }
+    stbi_image_free(image_data);
+
+    auto At_A  = A.transpose() * A;
+
+    auto norm_At_A = At_A.norm();
+
+    printf("the norm of A^T * A is %d\n", norm_At_A);
+
+
     // TASK 2: Solve the eigenvalue problem A^T A x = λ x
     // Use Eigen's solver to compute the eigenvalues of A^T A. Report the two largest singular values of matrix A.
+
+    SelfAdjointEigenSolver<MatrixXd> saeigensolver(At_A);
+  if (saeigensolver.info() != Eigen::Success) {
+    printf("couldn't calculate the eigenpairs, sorry\n");
+    abort();
+}
+    printf("The two largest eigenvalues are: %d and %d\n", saeigensolver.eigenvalues()(n-1), saeigensolver.eigenvalues()(n-2));
+  
 
     // TASK 3: Export matrix A^T A in Matrix Market format
     // Save A^T A in the Matrix Market format (.mtx) to be used with external solvers such as LIS.
