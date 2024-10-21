@@ -146,9 +146,9 @@ int n, m, channels;
         {
             if (((i / 20) + (j / 20)) % 2 == 0) 
             {
-                BW_Matrix(i, j) = 255;  // White
+                BW_Matrix(i, j) = 0;  // Black
             } else {
-                BW_Matrix(i, j) = 0;    // Black
+                BW_Matrix(i, j) = 255;    // White
             }
         }
         
