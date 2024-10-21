@@ -144,21 +144,42 @@ int n, m, channels;
     {
         for (int j = 0; j < 200; ++j)
         {
-            BW_Matrix(i, j) = static_cast<double>(0);
+            if (((i / 20) + (j / 20)) % 2 == 0) 
+            {
+                BW_Matrix(i, j) = 255;  // White
+            } else {
+                BW_Matrix(i, j) = 0;    // Black
+            }
         }
+        
+        
     }
 
     save_img(BW_Matrix, 200, 200, "Assets/BW_Matrix.png");
-    double BW_Matrix_norm = std::sqrt(BW_Matrix.dot(BW_Matrix));
-    printf("\nnorm of BW_Matrix is: %d" << BW_Matrix_norm );
+    auto BW_Matrix_Vector = BW_Matrix.transpose().reshaped();
 
-
-
+    double BW_Matrix_norm = std::sqrt(BW_Matrix_Vector.dot(BW_Matrix_Vector));
+    printf("\nnorm of BW_Matrix is: %f\n", BW_Matrix_norm );
 
 
     // TASK 9: Introduce noise into the checkerboard image
     // Add random noise to the checkerboard image by altering pixel values within the range [-50, 50].
     // Save and export the noisy image as a .png file.
+
+    MatrixXd BW_noisy = BW_Matrix; // Start with the original checkerboard
+
+    // Random number generator for noise in the range [-50, 50]
+    srand(777); // Seed rand() for reproducible random numbers
+
+    // Add noise to each pixel of BW_noisy
+    BW_noisy = BW_noisy.unaryExpr([&](double val) -> double {
+        int noise = rand() % 101 - 50;  // Generate noise in the range [-50, 50]
+        double noisy_val = val + noise;  // Add noise to the original pixel value
+        return std::clamp(noisy_val, 0.0, 255.0);  // Clamp result to range [0, 255]
+    });
+
+    save_img(BW_noisy, 200, 200, "Assets/BW_Noisy.png");
+
 
     // TASK 10: Perform SVD on the noisy image
     // Use SVD to analyze the noisy image and report the two largest singular values.
