@@ -138,6 +138,23 @@ int n, m, channels;
     // TASK 8: Create a black-and-white checkerboard image
     // Generate a checkerboard pattern image of 200x200 pixels. Each pixel alternates between black and white.
     // Report the Euclidean norm of the resulting matrix representing the image.
+    MatrixXd BW_Matrix(200, 200);
+    // Fill the matrix with color data
+    for (int i = 0; i < 200; ++i)
+    {
+        for (int j = 0; j < 200; ++j)
+        {
+            BW_Matrix(i, j) = static_cast<double>(0);
+        }
+    }
+
+    save_img(BW_Matrix, 200, 200, "Assets/BW_Matrix.png");
+    double BW_Matrix_norm = std::sqrt(BW_Matrix.dot(BW_Matrix));
+    printf("\nnorm of BW_Matrix is: %d" << BW_Matrix_norm );
+
+
+
+
 
     // TASK 9: Introduce noise into the checkerboard image
     // Add random noise to the checkerboard image by altering pixel values within the range [-50, 50].
