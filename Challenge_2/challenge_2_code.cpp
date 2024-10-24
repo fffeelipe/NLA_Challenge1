@@ -74,7 +74,7 @@ int n, m, channels;
 
     if (!image_data)
     {
-        std::cerr << "Error: Could not load image " << IMAGE_PATH << std::endl;
+        std::cerr << "\nError: Could not load image " << IMAGE_PATH << std::endl;
         return 1;
     }
     MatrixXd A(m, n);
@@ -91,37 +91,103 @@ int n, m, channels;
     auto At_A  = A.transpose() * A;
 
     auto norm_At_A = At_A.norm();
-
-    printf("the norm of A^T * A is %d\n", norm_At_A);
+  
+    // printf("Task1: The norm of A^T * A is: %f\n", norm_At_A);   
+    std:cout << "\nTask1: The norm of A^T * A is: " << norm_At_A << std::endl;  // 1.05041e+09
 
 
     // TASK 2: Solve the eigenvalue problem A^T A x = λ x
     // Use Eigen's solver to compute the eigenvalues of A^T A. Report the two largest singular values of matrix A.
-
+    /* Use SelfAdjointEigenSolver() to solve eigenvalue problem for symmetric matrices.(A^TT is symmetric)*/
     SelfAdjointEigenSolver<MatrixXd> saeigensolver(At_A);
-  if (saeigensolver.info() != Eigen::Success) {
-    printf("couldn't calculate the eigenpairs, sorry\n");
-    abort();
-}
-    printf("The two largest eigenvalues are: %d and %d\n", saeigensolver.eigenvalues()(n-1), saeigensolver.eigenvalues()(n-2));
-  
+    if (saeigensolver.info() != Eigen::Success) 
+    {
+        printf("\nCouldn't calculate the eigenpairs, sorry. \n");
+        abort();
+    } 
+    /* Eigenvalues are sorted in ascending order, last element is the largest.*/
+    // printf("Task2: The two largest eigenvalues are: %f and %f\n", saeigensolver.eigenvalues()(n-1), saeigensolver.eigenvalues()(n-2));
+    std::cout << "\nTask2: The two largest eigenvalues are: " << saeigensolver.eigenvalues()(n-1) << " and " << saeigensolver.eigenvalues()(n-2) << std::endl;
+
 
     // TASK 3: Export matrix A^T A in Matrix Market format
     // Save A^T A in the Matrix Market format (.mtx) to be used with external solvers such as LIS.
 
     if (saveMarket(At_A, "output/At_A.mtx"))
     {
-        printf("At_A.mtx succesfully saved.\n");
+        printf("\nAt_A.mtx succesfully saved.\n");
     }
     else
     {
-        printf("Error: At_A couldn't be saved.\n");
+        printf("\nError: At_A couldn't be saved.\n");
         return 1;
     }
+    /* Task3:
+    root@36d8968386ff test # cp /shared-folder/NLA_Challenge1/Challenge_2/output/At_A.mtx .
+    root@36d8968386ff test # mpicc -DUSE_MPI -I${mkLisInc} -L${mkLisLib} -llis etest1.c -o eigen1
+    root@36d8968386ff test # mpirun -n 4 ./eigen1 At_A.mtx eigvec.txt hist.txt -e pi -etol 1.0e-8
+
+    number of processes = 4
+    matrix size = 256 x 256 (65536 nonzero entries)
+
+    initial vector x      : all components set to 1
+    precision             : double
+    eigensolver           : Power
+    convergence condition : ||lx-(B^-1)Ax||_2 <= 1.0e-08 * ||lx||_2
+    matrix storage format : CSR
+    shift                 : 0.000000e+00
+    eigensolver status    : normal end
+
+    Power: mode number          = 0
+    Power: eigenvalue           = 1.045818e+09
+    Power: number of iterations = 8
+    Power: elapsed time         = 1.068292e-03 sec.
+    Power:   preconditioner     = 0.000000e+00 sec.
+    Power:     matrix creation  = 0.000000e+00 sec.
+    Power:   linear solver      = 0.000000e+00 sec.
+    Power: relative residual    = 1.866013e-09
+
+    // The maximum eigenvalue from task2 is 1.04582e+09, while in task3, the maximum eigenvalue is 1.045818e+09.
+    // Since these two eigenvalues are close enough(the difference is less than 10e-8), they can be considered equivalent.
+    // Therefore, for task3, the result calculated by the LIS solver is in agreement with the one obtained in task2.
+
+    */
+   std::cout << "\nTask3: The maximum eigenvalue calculated by LIS is: 1.045818e+09, and is in agreement with task2." << std::endl; 
+
 
     // TASK 4: Find a shift μ to accelerate the eigenvalue solver
     // Identify an optimal shift μ that can improve the convergence of the iterative eigensolver.
     // Report μ and the number of iterations required for convergence.
+
+    /*
+    root@36d8968386ff test # mpirun -n 4 ./eigen1 At_A.mtx eigvec.txt hist.txt -e pi -etol 1.0e-8 -shift 0.4e8
+
+    number of processes = 4
+    matrix size = 256 x 256 (65536 nonzero entries)
+
+    initial vector x      : all components set to 1
+    precision             : double
+    eigensolver           : Power
+    convergence condition : ||lx-(B^-1)Ax||_2 <= 1.0e-08 * ||lx||_2
+    matrix storage format : CSR
+    shift                 : 4.000000e+07
+    eigensolver status    : normal end
+
+    Power: mode number          = 0
+    Power: eigenvalue           = 1.045818e+09
+    Power: number of iterations = 7
+    Power: elapsed time         = 1.136417e-03 sec.
+    Power:   preconditioner     = 0.000000e+00 sec.
+    Power:     matrix creation  = 0.000000e+00 sec.
+    Power:   linear solver      = 0.000000e+00 sec.
+    Power: relative residual    = 9.032250e-10
+    
+    // Using 0.4e8 as the shift required only 7 iterations to converge, which is the minimum number of iterations observed among the tested shifts.
+    // The relative residual is 9.032250e-10, which is smaller than the tolerance of 10e-8, meeting the accuracy requirement.
+    // Shift 0.4e8 offers a good balance between minimizing the number of iterations and achiveing a small relative residual, prove both speed and precision.
+    */
+   std::cout << "\nTask4: The most effective shift for accelerating the eigensolver is 0.4e8." << std::endl;
+
 
     // TASK 5: Perform SVD on matrix A
     // Perform Singular Value Decomposition (SVD) on matrix A using Eigen's SVD module.
