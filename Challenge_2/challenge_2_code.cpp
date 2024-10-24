@@ -39,7 +39,7 @@ void save_img(MatrixXd m, int width, int height, std::string outputName)
 
 
 // Calculate the truncated matrices Ck and Dk.
-std::tuple<MatrixXd, MatrixXd> calculate_truncateSVD(const BDCSVD<MatrixXd>& svd, const VectorXd& singularValue, int k) {
+template <typename T > std::tuple<MatrixXd, MatrixXd> calculate_truncateSVD(const  T& svd, const VectorXd& singularValue, int k) {
     MatrixXd C_k = svd.matrixU().leftCols(k);
     MatrixXd V_k = svd.matrixV().leftCols(k);
     MatrixXd Sigma_k = singularValue.head(k).asDiagonal();
@@ -50,6 +50,8 @@ std::tuple<MatrixXd, MatrixXd> calculate_truncateSVD(const BDCSVD<MatrixXd>& svd
     return std::make_tuple(C_k, D_k);
 
 }
+
+
 
 int main(int argc, char *argv[])
 {
@@ -182,8 +184,8 @@ int main(int argc, char *argv[])
     // Perform Singular Value Decomposition (SVD) on matrix A using Eigen's SVD module.
     // Report the Euclidean norm of the singular values (Σ) matrix.
     BDCSVD<MatrixXd> svdA(A, ComputeThinU | ComputeThinV);  // Use BDCSVD for large matrix
-    VectorXd singularValueA = svdA.singularValues();
-    auto norm_singularValueA = singularValueA.norm();
+    VectorXd singularValuesA = svdA.singularValues();
+    auto norm_singularValueA = singularValuesA.norm();
     std::cout << "\nTask5: The Euclidean norm of the singular value is: " << norm_singularValueA << std::endl;
 
 
@@ -196,11 +198,11 @@ int main(int argc, char *argv[])
     // TASK 7: Compress image using C * D^T for k = 40 and k = 80
     // Reconstruct the compressed images from the matrices C and D.
     // Export the images as .png files and save them.
-    auto [C_k1, D_k1] = calculate_truncateSVD(svdA, singularValueA, k1);
+    auto [C_k1, D_k1] = calculate_truncateSVD(svdA, singularValuesA, k1);
     MatrixXd compressed_matrix_k1 = C_k1 * D_k1;
     save_img(compressed_matrix_k1, n, m, "Assets/task7_k40.png");
 
-    auto [C_k2, D_k2] = calculate_truncateSVD(svdA, singularValueA, k2);
+    auto [C_k2, D_k2] = calculate_truncateSVD(svdA, singularValuesA, k2);
     MatrixXd compressed_matrix_k2 = C_k2 * D_k2;
     save_img(compressed_matrix_k2, n, m, "Assets/task7_k80.png");
 
@@ -212,18 +214,10 @@ int main(int argc, char *argv[])
     MatrixXd BW_Matrix(200, 200);
     // Fill the matrix with color data
     for (int i = 0; i < 200; ++i)
-    {
         for (int j = 0; j < 200; ++j)
-        {
-            if (((i / 20) + (j / 20)) % 2 == 0) 
-            {
-                BW_Matrix(i, j) = 0;  // Black
-            } else {
-                BW_Matrix(i, j) = 255;    // White
-            }
-        }
+        BW_Matrix(i,j) = (i/25 + j/25)%2?0:255;
         
-    }
+    
     std::cout << "\nTask8: " << std::endl;
     save_img(BW_Matrix, 200, 200, "Assets/BW_Matrix.png");
     auto BW_Matrix_Vector = BW_Matrix.transpose().reshaped();
@@ -253,14 +247,28 @@ int main(int argc, char *argv[])
 
     // TASK 10: Perform SVD on the noisy image
     // Use SVD to analyze the noisy image and report the two largest singular values.
+    JacobiSVD<MatrixXd> svdNoisy;
+    svdNoisy.compute(BW_noisy);
+
+    printf("the two largest singular values are: %f and %f\n", svdNoisy.singularValues()(0), svdNoisy.singularValues()(1));
+
 
     // TASK 11: Compute C and D for k = 5 and k = 10
     // Based on the SVD of the noisy image, compute C and D matrices for k = 5 and k = 10.
     // Report the size of the C and D matrices.
 
+    auto [C5_BW_noisy, D5_BW_noisy] = calculate_truncateSVD(svdNoisy, singularValuesA, 5);
+    auto [C10_BW_noisy, D10_BW_noisy] = calculate_truncateSVD(svdNoisy, singularValuesA, 10);
+
+    printf("Size for C and D for svd with k=5: %dx%d %dx%d\n", C5_BW_noisy.rows(), C5_BW_noisy.cols(), D5_BW_noisy.rows(), D5_BW_noisy.cols());
+    printf("Size for C and D for svd with k=10: %dx%d %dx%d\n", C10_BW_noisy.rows(), C10_BW_noisy.cols(), D10_BW_noisy.rows(), D10_BW_noisy.cols());
+
     // TASK 12: Compress the noisy image using C * D^T for k = 5 and k = 10
     // Reconstruct the compressed versions of the noisy image using k = 5 and k = 10.
     // Save the compressed images as .png files.
+
+    save_img(C5_BW_noisy * D5_BW_noisy, 200, 200, "Assets/BW_Noisy.png");
+    save_img(C10_BW_noisy * D10_BW_noisy, 200, 200, "Assets/BW_Noisy.png");
 
     // TASK 13: Compare compressed images with the original and noisy images
     // Compare the quality of the compressed images with both the original and noisy versions.
