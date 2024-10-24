@@ -9,6 +9,8 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "Library/stb_image_write.h"
 
+#include <Eigen/SVD>
+
 using namespace Eigen;
 using namespace std;
 
@@ -34,31 +36,19 @@ void save_img(MatrixXd m, int width, int height, std::string outputName)
     std::cout << "\nimage saved to " << outputName << std::endl;
 }
 
-// assume convolution matrix to be 3x3
-std::tuple<SparseMatrix<double>, VectorXd>
-applyConvolution(VectorXd img, MatrixXd convolutionMatrix, int width, int height)
-{
-    SparseMatrix<double> filterMatrix(img.size(), img.size());
-    std::list<Triplet<double>> filter_data;
-    for (int idx = 0; idx < img.size(); idx++)
-    {
-        int row = idx / width;
-        int column = idx % width;
 
-        for (int i = -1; i < 2; i++)
-        {
-            for (int j = -1; j < 2; j++)
-            {
-                if (column + i < 0 || column + i >= width || row + j < 0 || row + j >= height || convolutionMatrix(i + 1, j + 1) == 0.)
-                    continue;
 
-                filter_data.emplace_back(idx, column + i + (j + row) * width, convolutionMatrix(i + 1, j + 1));
-            }
-        }
-    }
-    filterMatrix.setFromTriplets(filter_data.begin(), filter_data.end());
+// Calculate the truncated matrices Ck and Dk.
+std::tuple<MatrixXd, MatrixXd> calculate_truncateSVD(const BDCSVD<MatrixXd>& svd, const VectorXd& singularValue, int k) {
+    MatrixXd C_k = svd.matrixU().leftCols(k);
+    MatrixXd V_k = svd.matrixV().leftCols(k);
+    MatrixXd Sigma_k = singularValue.head(k).asDiagonal();
 
-    return {filterMatrix, filterMatrix * img};
+    MatrixXd D_k = Sigma_k * V_k.transpose();
+    std::cout << "\nFor k = " << k << ", the number of nonzero entries in the matrix C and D are: " << C_k.nonZeros() << " and " << D_k.nonZeros() << std::endl;
+
+    return std::make_tuple(C_k, D_k);
+
 }
 
 int main(int argc, char *argv[])
@@ -68,9 +58,8 @@ int main(int argc, char *argv[])
     // Then compute the matrix product A^T * A to analyze the correlation between image columns.
     // Finally, compute and print the Euclidean norm of A^T * A.
 
-int n, m, channels;
+    int n, m, channels;
     unsigned char *image_data = stbi_load(IMAGE_PATH.c_str(), &n, &m, &channels, 1); // Force 1 channel
-    //m = height, n = width
 
     if (!image_data)
     {
@@ -192,14 +181,30 @@ int n, m, channels;
     // TASK 5: Perform SVD on matrix A
     // Perform Singular Value Decomposition (SVD) on matrix A using Eigen's SVD module.
     // Report the Euclidean norm of the singular values (Σ) matrix.
+    BDCSVD<MatrixXd> svdA(A, ComputeThinU | ComputeThinV);  // Use BDCSVD for large matrix
+    VectorXd singularValueA = svdA.singularValues();
+    auto norm_singularValueA = singularValueA.norm();
+    std::cout << "\nTask5: The Euclidean norm of the singular value is: " << norm_singularValueA << std::endl;
+
 
     // TASK 6: Compute matrices C and D for k = 40 and k = 80
     // Compute C and D matrices using k = 40 and k = 80 based on the SVD results.
     // Report the number of non-zero entries in C and D.
+    int k1 = 40, k2 = 80;
+    std::cout << "\nTask6 && Task7: " << std::endl;
 
     // TASK 7: Compress image using C * D^T for k = 40 and k = 80
     // Reconstruct the compressed images from the matrices C and D.
     // Export the images as .png files and save them.
+    auto [C_k1, D_k1] = calculate_truncateSVD(svdA, singularValueA, k1);
+    MatrixXd compressed_matrix_k1 = C_k1 * D_k1;
+    save_img(compressed_matrix_k1, n, m, "Assets/task7_k40.png");
+
+    auto [C_k2, D_k2] = calculate_truncateSVD(svdA, singularValueA, k2);
+    MatrixXd compressed_matrix_k2 = C_k2 * D_k2;
+    save_img(compressed_matrix_k2, n, m, "Assets/task7_k80.png");
+
+
 
     // TASK 8: Create a black-and-white checkerboard image
     // Generate a checkerboard pattern image of 200x200 pixels. Each pixel alternates between black and white.
@@ -218,14 +223,13 @@ int n, m, channels;
             }
         }
         
-        
     }
-
+    std::cout << "\nTask8: " << std::endl;
     save_img(BW_Matrix, 200, 200, "Assets/BW_Matrix.png");
     auto BW_Matrix_Vector = BW_Matrix.transpose().reshaped();
 
     double BW_Matrix_norm = std::sqrt(BW_Matrix_Vector.dot(BW_Matrix_Vector));
-    printf("\nnorm of BW_Matrix is: %f\n", BW_Matrix_norm );
+    printf("\nThe norm of BW_Matrix is: %f\n", BW_Matrix_norm );
 
 
     // TASK 9: Introduce noise into the checkerboard image
