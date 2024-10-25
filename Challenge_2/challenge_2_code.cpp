@@ -217,7 +217,7 @@ int main(int argc, char *argv[])
     // Fill the matrix with color data
     for (int i = 0; i < 200; ++i)
         for (int j = 0; j < 200; ++j)
-        BW_Matrix(i,j) = (i/25 + j/25)%2?0:255;
+        BW_Matrix(i,j) = (i/25 + j/25)%2?255:0;
         
     
     std::cout << "\nTask8: " << std::endl;
