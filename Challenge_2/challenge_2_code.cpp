@@ -116,27 +116,29 @@ int main(int argc, char *argv[])
     /* Task3:
     root@36d8968386ff test # cp /shared-folder/NLA_Challenge1/Challenge_2/output/At_A.mtx .
     root@36d8968386ff test # mpicc -DUSE_MPI -I${mkLisInc} -L${mkLisLib} -llis etest1.c -o eigen1
-    root@36d8968386ff test # mpirun -n 4 ./eigen1 At_A.mtx eigvec.txt hist.txt -e pi -etol 1.0e-8
+    root@36d8968386ff test # mpirun -n 4 ./eigen1 At_A.mtx eigvec.txt hist.txt -e cr -etol 1e-8
 
     number of processes = 4
     matrix size = 256 x 256 (65536 nonzero entries)
 
     initial vector x      : all components set to 1
     precision             : double
-    eigensolver           : Power
+    eigensolver           : CR
     convergence condition : ||lx-(B^-1)Ax||_2 <= 1.0e-08 * ||lx||_2
     matrix storage format : CSR
     shift                 : 0.000000e+00
+    linear solver         : BiCG
+    preconditioner        : none
     eigensolver status    : normal end
 
-    Power: mode number          = 0
-    Power: eigenvalue           = 1.045818e+09
-    Power: number of iterations = 8
-    Power: elapsed time         = 1.068292e-03 sec.
-    Power:   preconditioner     = 0.000000e+00 sec.
-    Power:     matrix creation  = 0.000000e+00 sec.
-    Power:   linear solver      = 0.000000e+00 sec.
-    Power: relative residual    = 1.866013e-09
+    CR: mode number          = 0
+    CR: eigenvalue           = 1.045818e+09
+    CR: number of iterations = 5
+    CR: elapsed time         = 1.772833e-03 sec.
+    CR:   preconditioner     = 2.080000e-07 sec.
+    CR:     matrix creation  = 2.080000e-07 sec.
+    CR:   linear solver      = 5.841600e-05 sec.
+    CR: relative residual    = 1.701354e-09
 
     // The maximum eigenvalue from task2 is 1.04582e+09, while in task3, the maximum eigenvalue is 1.045818e+09.
     // Since these two eigenvalues are close enough(the difference is less than 10e-8), they can be considered equivalent.
