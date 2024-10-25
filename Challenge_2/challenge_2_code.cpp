@@ -39,7 +39,7 @@ void save_img(MatrixXd m, int width, int height, std::string outputName)
 
 
 // Calculate the truncated matrices Ck and Dk.
-template <typename T > std::tuple<MatrixXd, MatrixXd> calculate_truncateSVD(const  T& svd, const VectorXd& singularValue, int k) {
+std::tuple<MatrixXd, MatrixXd> calculate_truncateSVD(const  BDCSVD<MatrixXd>& svd, const VectorXd& singularValue, int k) {
     MatrixXd C_k = svd.matrixU().leftCols(k);
     MatrixXd V_k = svd.matrixV().leftCols(k);
     MatrixXd Sigma_k = singularValue.head(k).asDiagonal();
@@ -249,18 +249,22 @@ int main(int argc, char *argv[])
 
     // TASK 10: Perform SVD on the noisy image
     // Use SVD to analyze the noisy image and report the two largest singular values.
-    JacobiSVD<MatrixXd> svdNoisy;
-    svdNoisy.compute(BW_noisy);
-
-    printf("the two largest singular values are: %f and %f\n", svdNoisy.singularValues()(0), svdNoisy.singularValues()(1));
+    BDCSVD<MatrixXd> svdNoisy(BW_noisy, ComputeThinU | ComputeThinV);
+    auto svdNoisySingularValues = svdNoisy.singularValues();
+    printf("the two largest singular values are: %f and %f\n", svdNoisySingularValues(0), svdNoisySingularValues(1));
 
 
     // TASK 11: Compute C and D for k = 5 and k = 10
     // Based on the SVD of the noisy image, compute C and D matrices for k = 5 and k = 10.
     // Report the size of the C and D matrices.
 
-    auto [C5_BW_noisy, D5_BW_noisy] = calculate_truncateSVD(svdNoisy, singularValuesA, 5);
-    auto [C10_BW_noisy, D10_BW_noisy] = calculate_truncateSVD(svdNoisy, singularValuesA, 10);
+    //just for fun:
+    auto [C2_BW_noisy, D2_BW_noisy] = calculate_truncateSVD(svdNoisy, svdNoisySingularValues, 2);
+    save_img(C2_BW_noisy * D2_BW_noisy, 200, 200, "Assets/SVD_2_BW_Noisy.png");
+
+
+    auto [C5_BW_noisy, D5_BW_noisy] = calculate_truncateSVD(svdNoisy, svdNoisySingularValues, 5);
+    auto [C10_BW_noisy, D10_BW_noisy] = calculate_truncateSVD(svdNoisy, svdNoisySingularValues, 10);
 
     printf("Size for C and D for svd with k=5: %dx%d %dx%d\n", C5_BW_noisy.rows(), C5_BW_noisy.cols(), D5_BW_noisy.rows(), D5_BW_noisy.cols());
     printf("Size for C and D for svd with k=10: %dx%d %dx%d\n", C10_BW_noisy.rows(), C10_BW_noisy.cols(), D10_BW_noisy.rows(), D10_BW_noisy.cols());
@@ -269,8 +273,8 @@ int main(int argc, char *argv[])
     // Reconstruct the compressed versions of the noisy image using k = 5 and k = 10.
     // Save the compressed images as .png files.
 
-    save_img(C5_BW_noisy * D5_BW_noisy, 200, 200, "Assets/BW_Noisy.png");
-    save_img(C10_BW_noisy * D10_BW_noisy, 200, 200, "Assets/BW_Noisy.png");
+    save_img(C5_BW_noisy * D5_BW_noisy, 200, 200, "Assets/SVD_5_BW_Noisy.png");
+    save_img(C10_BW_noisy * D10_BW_noisy, 200, 200, "Assets/SVD_10_BW_Noisy.png");
 
     // TASK 13: Compare compressed images with the original and noisy images
     // Compare the quality of the compressed images with both the original and noisy versions.
