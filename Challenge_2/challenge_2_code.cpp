@@ -151,11 +151,7 @@ int main(int argc, char *argv[])
     // Report μ and the number of iterations required for convergence.
 
     /*
-<<<<<<< HEAD
     root@36d8968386ff test # ./eigen1 At_A.mtx eigenvec.txt hist.txt -e pi -shift 4.53e7
-=======
-    root@36d8968386ff test # mpirun -n 4 ./eigen1 At_A.mtx eigvec.txt hist.txt -e pi -shift 4.53e7
->>>>>>> 3a7c6078841c06b774e3a00f70b3e319c5666ce1
 
     number of processes = 1
     matrix size = 256 x 256 (65536 nonzero entries)
@@ -171,19 +167,11 @@ int main(int argc, char *argv[])
     Power: mode number          = 0
     Power: eigenvalue           = 1.045818e+09
     Power: number of iterations = 10
-<<<<<<< HEAD
     Power: elapsed time         = 5.835130e-04 sec.
     Power:   preconditioner     = 0.000000e+00 sec.
     Power:     matrix creation  = 0.000000e+00 sec.
     Power:   linear solver      = 0.000000e+00 sec.
     Power: relative residual    = 6.641907e-14
-=======
-    Power: elapsed time         = 1.110375e-03 sec.
-    Power:   preconditioner     = 0.000000e+00 sec.
-    Power:     matrix creation  = 0.000000e+00 sec.
-    Power:   linear solver      = 0.000000e+00 sec.
-    Power: relative residual    = 6.642461e-14
->>>>>>> 3a7c6078841c06b774e3a00f70b3e319c5666ce1
 
     // Based on the concept of the shift in eigenvalue solvers, I selected μ(shift) that is approximately equal to (λ2+λmin)/2, 
     // which resulted in a shift value close to 4.53e7. I then tested slight variations around this shift,
@@ -296,10 +284,8 @@ int main(int argc, char *argv[])
     // Compare the quality of the compressed images with both the original and noisy versions.
     // Report the results and observations.
 
-    /*The compressed noisy checkerboard images (using SVD) still retain noticeable noise, 
-    but they manage to preserve the general checkerboard structure well. 
-    Lower k values do reduce some noise, yet the remaining noise is still significant. 
-    Despite this, the checker pattern remains identifiable, showing that SVD effectively maintains core features even if noise reduction isn’t perfect.*/
+    /*The compressed versions of the noisy checkerboard (using SVD) still contain a lot of noise but maintain the recognizable checkerboard pattern. 
+    Even with compression, the key features of the checkerboard are preserved, showing SVD's ability to approximate the main structure effectively despite the remaining noise.*/
 
     return 0;
 }
