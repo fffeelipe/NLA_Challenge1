@@ -280,5 +280,8 @@ int main(int argc, char *argv[])
     // Compare the quality of the compressed images with both the original and noisy versions.
     // Report the results and observations.
 
+    /*The compressed versions of the checkerboard image (using SVD) effectively reduced noise while maintaining image structure, depending on k. 
+    Lower k values worked well for denoising but blurred details, while higher k kept more detail, including some noise. */
+
     return 0;
 }
