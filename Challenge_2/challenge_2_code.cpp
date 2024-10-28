@@ -151,7 +151,11 @@ int main(int argc, char *argv[])
     // Report μ and the number of iterations required for convergence.
 
     /*
+<<<<<<< HEAD
     root@36d8968386ff test # ./eigen1 At_A.mtx eigenvec.txt hist.txt -e pi -shift 4.53e7
+=======
+    root@36d8968386ff test # mpirun -n 4 ./eigen1 At_A.mtx eigvec.txt hist.txt -e pi -shift 4.53e7
+>>>>>>> 3a7c6078841c06b774e3a00f70b3e319c5666ce1
 
     number of processes = 1
     matrix size = 256 x 256 (65536 nonzero entries)
@@ -167,23 +171,31 @@ int main(int argc, char *argv[])
     Power: mode number          = 0
     Power: eigenvalue           = 1.045818e+09
     Power: number of iterations = 10
+<<<<<<< HEAD
     Power: elapsed time         = 5.835130e-04 sec.
     Power:   preconditioner     = 0.000000e+00 sec.
     Power:     matrix creation  = 0.000000e+00 sec.
     Power:   linear solver      = 0.000000e+00 sec.
     Power: relative residual    = 6.641907e-14
+=======
+    Power: elapsed time         = 1.110375e-03 sec.
+    Power:   preconditioner     = 0.000000e+00 sec.
+    Power:     matrix creation  = 0.000000e+00 sec.
+    Power:   linear solver      = 0.000000e+00 sec.
+    Power: relative residual    = 6.642461e-14
+>>>>>>> 3a7c6078841c06b774e3a00f70b3e319c5666ce1
 
     // Based on the concept of the shift in eigenvalue solvers, I selected μ(shift) that is approximately equal to (λ2+λmin)/2, 
     // which resulted in a shift value close to 4.53e7. I then tested slight variations around this shift,
-    // specifically μ+100(4.63e7) and μ-100(4.43e7). All these three shifts produced the same number of iterations and relative residuals, 
-    // indicating stable convergence behavior. The minimum elapsed time was achieved with 4.63e7, at 9.940840e-04 sec, while
-    // the other two were on the order of e-3. Thus, I finalized this shift value as a good choice for the eigensolver.
+    // specifically μ+100(4.63e7) and μ-100(4.43e7). All these three shifts produced the same number of iterations, and all the residuals reach e-14,
+    // indicating stable convergence behavior(less than e-8). The minimum elapsed time was achieved with 4.53e7, at 1.110375e-03 sec, while
+    // the other two were all great than it. Thus, I finalized this shift value as a good choice for the eigensolver.
     
-    // Using 4.63e7 as the shift required 12 iterations to converge, which is the minimum number of iterations observed among the tested shifts.
-    // The relative residual is 1.054496e-13, which is smaller than the tolerance of 10e-8, meeting the accuracy requirement.
-    // Shift 4.63e7 offers a good balance between minimizing the number of iterations and achiveing a small relative residual, prove both speed and precision.
+    // Using 4.53e7 as the shift required 10 iterations to converge, which is the minimum number of iterations observed among the tested shifts.
+    // The relative residual is 6.642461e-14, which is smaller than the tolerance of 10e-8, meeting the accuracy requirement.
+    // Shift 4.53e7 offers a good balance between minimizing the number of iterations and achiveing a small relative residual, prove both speed and precision.
     */
-   std::cout << "\nTask4: The most effective shift for accelerating the eigensolver is 4.63e7." << std::endl;
+   std::cout << "\nTask4: The most effective shift(aka μ) for accelerating the eigensolver is 4.53e7." << std::endl;
 
 
     // TASK 5: Perform SVD on matrix A
