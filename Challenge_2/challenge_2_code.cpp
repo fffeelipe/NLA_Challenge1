@@ -151,9 +151,9 @@ int main(int argc, char *argv[])
     // Report μ and the number of iterations required for convergence.
 
     /*
-    root@36d8968386ff test # mpirun -n 4 ./eigen1 At_A.mtx eigvec.txt hist.txt -e pi 4.63e7
+    root@36d8968386ff test # ./eigen1 At_A.mtx eigenvec.txt hist.txt -e pi -shift 4.53e7
 
-    number of processes = 4
+    number of processes = 1
     matrix size = 256 x 256 (65536 nonzero entries)
 
     initial vector x      : all components set to 1
@@ -161,17 +161,17 @@ int main(int argc, char *argv[])
     eigensolver           : Power
     convergence condition : ||lx-(B^-1)Ax||_2 <= 1.0e-12 * ||lx||_2
     matrix storage format : CSR
-    shift                 : 0.000000e+00
+    shift                 : 4.530000e+07
     eigensolver status    : normal end
 
     Power: mode number          = 0
     Power: eigenvalue           = 1.045818e+09
-    Power: number of iterations = 12
-    Power: elapsed time         = 9.940840e-04 sec.
+    Power: number of iterations = 10
+    Power: elapsed time         = 5.835130e-04 sec.
     Power:   preconditioner     = 0.000000e+00 sec.
     Power:     matrix creation  = 0.000000e+00 sec.
     Power:   linear solver      = 0.000000e+00 sec.
-    Power: relative residual    = 1.054496e-13
+    Power: relative residual    = 6.641907e-14
 
     // Based on the concept of the shift in eigenvalue solvers, I selected μ(shift) that is approximately equal to (λ2+λmin)/2, 
     // which resulted in a shift value close to 4.53e7. I then tested slight variations around this shift,
@@ -284,8 +284,10 @@ int main(int argc, char *argv[])
     // Compare the quality of the compressed images with both the original and noisy versions.
     // Report the results and observations.
 
-    /*The compressed versions of the checkerboard image (using SVD) effectively reduced noise while maintaining image structure, depending on k. 
-    Lower k values worked well for denoising but blurred details, while higher k kept more detail, including some noise. */
+    /*The compressed noisy checkerboard images (using SVD) still retain noticeable noise, 
+    but they manage to preserve the general checkerboard structure well. 
+    Lower k values do reduce some noise, yet the remaining noise is still significant. 
+    Despite this, the checker pattern remains identifiable, showing that SVD effectively maintains core features even if noise reduction isn’t perfect.*/
 
     return 0;
 }
